@@ -1,25 +1,59 @@
-import logo from './logo.svg';
-import './App.css';
+import React, { Suspense, lazy, useContext, useEffect } from 'react'
+import { RouterProvider, createBrowserRouter } from 'react-router-dom'
+import Layout from './Components/Layout/Layout'
+import Home from './Components/Home/Home';
+import Products from './Components/Products/Products';
+import Brand from './Components/Brand/Brand';
+import Login from './Components/Login/Login';
+import NotFound from './Components/NotFound/NotFound';
+import Register from './Components/Register/Register';
+import Categoris from './Components/Categories/Categoris';
+import { UserToken } from './Context/UserToken';
+import ProtectedRoute from './Components/PrtotectedRoute';
+import ProductDetails from './Components/ProductDetails';
+import { Toaster } from 'react-hot-toast';
+import Loading from './Components/Loading';
+import Orders from './Components/Orders';
+import { CartContext } from './Context/CartContext';
 
-function App() {
+const Cart = lazy(() => import('./Components/Cart/Cart'));
+
+
+export default function App() {
+
+  let test = 'test'
+
+  let { setIsLogin } = useContext(UserToken)
+ 
+  useEffect(() => {
+    if (localStorage.getItem('userToken')) {
+      setIsLogin(localStorage.getItem('userToken'))
+    }
+  }, [])
+
+  const routes = createBrowserRouter([
+    {
+      path: '', element: <Layout test={test}></Layout>, children: [
+        { index: true, element: <Home></Home> },
+        { path: 'products', element: <Products></Products> },
+        { path: 'allorders', element: <Orders></Orders> },
+        { path: 'brands', element: <Brand></Brand> },
+        {
+          path: 'cart', element: <Suspense fallback={<Loading></Loading>}><ProtectedRoute><Cart></Cart></ProtectedRoute></Suspense>
+        },
+        { path: 'categoris', element: <Categoris></Categoris> },
+        { path: 'productdetails/:id', element: <ProductDetails></ProductDetails> },
+        { path: 'login', element: <Login></Login> },
+        { path: 'register', element: <Register></Register> },
+        { path: '*', element: <NotFound></NotFound> }
+      ]
+    }
+  ])
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
-  );
+    <>
+      <RouterProvider router={routes}></RouterProvider>
+      <Toaster></Toaster>
+    </>
+  )
 }
-
-export default App;
